@@ -92,6 +92,28 @@ main { max-width:860px; margin:2rem auto 4rem; padding:0 1.5rem; }
 footer { text-align:center; padding:2rem; border-top:1px solid var(--parchment-dark); color:var(--ink-faded); font-family:'IM Fell English',serif; font-style:italic; font-size:.9rem; }
 .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(3rem); background:var(--ink); color:var(--gold-pale); font-family:'IM Fell English',serif; font-style:italic; font-size:.95rem; padding:.65rem 1.5rem; border-radius:2px; border:1px solid var(--gold); opacity:0; transition:all .35s; pointer-events:none; z-index:999; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.btn-add { background:var(--ink); color:var(--gold-pale); border:1px solid var(--gold); padding:.6rem 1.2rem; font-family:'IM Fell English',serif; font-style:italic; font-size:1rem; cursor:pointer; border-radius:2px; transition:background .2s,color .2s; white-space:nowrap; }
+.btn-add:hover { background:var(--gold); color:var(--ink); }
+
+/* Modal */
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(42,31,14,.55); backdrop-filter:blur(2px); z-index:1000; align-items:center; justify-content:center; }
+.modal-bg.on { display:flex; }
+.modal { background:var(--cream); border:1px solid var(--border); border-top:3px solid var(--gold); max-width:480px; width:90%; padding:2rem; position:relative; font-family:'Crimson Text',serif; }
+.modal h2 { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--ink); margin-bottom:.3rem; }
+.modal-sub { font-size:.88rem; color:var(--ink-faded); font-style:italic; margin-bottom:1.5rem; }
+.modal label { display:block; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faded); margin-bottom:.3rem; margin-top:1rem; }
+.modal label:first-of-type { margin-top:0; }
+.modal input, .modal select { width:100%; padding:.55rem .8rem; font-family:'Crimson Text',serif; font-size:1rem; color:var(--ink); background:var(--parchment); border:1px solid var(--border); border-radius:2px; outline:none; }
+.modal input:focus, .modal select:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,150,46,.1); }
+.modal-btns { display:flex; gap:.75rem; margin-top:1.5rem; justify-content:flex-end; }
+.mbtn { padding:.55rem 1.2rem; font-family:'IM Fell English',serif; font-style:italic; font-size:.95rem; border-radius:2px; cursor:pointer; border:1px solid var(--border); }
+.mbtn-confirm { background:var(--ink); color:var(--gold-pale); border-color:var(--gold); }
+.mbtn-confirm:hover { background:var(--gold); color:var(--ink); }
+.mbtn-cancel { background:var(--parchment); color:var(--ink-faded); }
+.mbtn-cancel:hover { background:var(--parchment-dark); color:var(--ink); }
+.modal-close { position:absolute; top:.75rem; right:1rem; background:none; border:none; font-size:1.2rem; color:var(--ink-faded); cursor:pointer; line-height:1; }
+.modal-close:hover { color:var(--ink); }
+.modal-ornament { text-align:center; color:var(--gold); font-size:.8rem; margin-bottom:1.2rem; letter-spacing:.2em; }
 @media(max-width:600px) { .bnum { display:none; } .sbar { gap:1.2rem; } }
 </style>
 </head>
@@ -117,11 +139,50 @@ footer { text-align:center; padding:2rem; border-top:1px solid var(--parchment-d
     <option value="pending">Pendientes</option>
     <option value="read">Leídos</option>
   </select>
+  <button class="btn-add" id="btnAdd">+ Agregar libro</button>
 </div>
 <div class="srb" id="srb"><div class="srb-i" id="srbtxt"></div></div>
 
 <main id="app"></main>
 <div class="toast" id="toastEl"></div>
+
+<!-- Modal agregar libro -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-ornament">✦ &nbsp; Nueva adquisición &nbsp; ✦</div>
+    <h2>Agregar libro</h2>
+    <p class="modal-sub">El libro se añadirá al final de tu lista</p>
+    <label for="mTitle">Título</label>
+    <input type="text" id="mTitle" placeholder="Título del libro…" autocomplete="off">
+    <label for="mAuthor">Autor</label>
+    <input type="text" id="mAuthor" placeholder="Nombre del autor…" autocomplete="off">
+    <label for="mSaga">Saga / Colección</label>
+    <input type="text" id="mSaga" placeholder="Libro individual, nombre de saga…" autocomplete="off">
+    <label for="mTag">Tipo</label>
+    <select id="mTag">
+      <option value="t-other">📗 Libro individual</option>
+      <option value="t-king">👑 Stephen King</option>
+      <option value="t-hp">⚡ Harry Potter</option>
+      <option value="t-lotr">💍 El Señor de los Anillos</option>
+      <option value="t-ms">🌑 Mistborn</option>
+      <option value="t-kl">🐺 La canción del lobo</option>
+      <option value="t-tower">🗼 La Torre Oscura</option>
+      <option value="t-guerra">⚔️ La guerra de los cielos</option>
+      <option value="t-mxtx">🌸 MXTX</option>
+      <option value="t-col">📚 Colección SK</option>
+      <option value="t-nonfic">📖 No ficción</option>
+      <option value="t-pc">🤴 El príncipe cautivo</option>
+      <option value="t-rc">🐦 Rey cuervo</option>
+      <option value="t-ro">🌑 El rey oscuro</option>
+    </select>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel" id="modalCancel">Cancelar</button>
+      <button class="mbtn mbtn-confirm" id="modalConfirm">✦ Agregar</button>
+    </div>
+  </div>
+</div>
+
 <footer>✦ &nbsp; In libris libertas &nbsp; ✦</footer>
 
 <script>
@@ -523,11 +584,98 @@ function showToast(msg) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   8. INIT
+   8. AGREGAR LIBRO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var EXTRA_KEY = 'bib_extra_v1';
+
+function loadExtras() {
+  try { return JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveExtras(arr) {
+  localStorage.setItem(EXTRA_KEY, JSON.stringify(arr));
+}
+
+function appendExtraBook(title, author, sagaLabel, tag) {
+  var extras = loadExtras();
+  var id = 'EXTRA_' + Date.now();
+  var num = BOOKS.length + 1;
+  var book = { id: id, key: 'EXTRA', sagaLabel: sagaLabel, tag: tag, title: title, author: author, num: num };
+  extras.push(book);
+  saveExtras(extras);
+  BOOKS.push(book);
+  appendCardToDOM(book);
+  updateStats();
+  showToast('✦ «' + title + '» agregado a tu biblioteca');
+}
+
+function appendCardToDOM(book) {
+  var app = document.getElementById('app');
+  // Find or create "Libros agregados" section at the end
+  var extraSection = document.getElementById('extra-section');
+  if (!extraSection) {
+    var divEl = document.createElement('div');
+    divEl.innerHTML = '<div class="sdiv" id="extra-section"><span class="sdivlbl">— Libros agregados —</span></div>';
+    app.appendChild(divEl.firstElementChild);
+    extraSection = document.getElementById('extra-section');
+  }
+  var tmp = document.createElement('div');
+  tmp.innerHTML = cardHTML(book);
+  var card = tmp.firstElementChild;
+  extraSection.insertAdjacentElement('afterend', card);
+  bindCard(card, book.id);
+}
+
+function openModal() {
+  document.getElementById('modalBg').classList.add('on');
+  document.getElementById('mTitle').focus();
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('on');
+  document.getElementById('mTitle').value = '';
+  document.getElementById('mAuthor').value = '';
+  document.getElementById('mSaga').value = '';
+  document.getElementById('mTag').value = 't-other';
+}
+
+function confirmAdd() {
+  var title = document.getElementById('mTitle').value.trim();
+  var author = document.getElementById('mAuthor').value.trim();
+  var saga = document.getElementById('mSaga').value.trim() || 'Libro individual';
+  var tag = document.getElementById('mTag').value;
+  if (!title) { document.getElementById('mTitle').focus(); return; }
+  appendExtraBook(title, author || 'Autor desconocido', saga, tag);
+  closeModal();
+}
+
+// Restore extras on load
+function restoreExtras() {
+  var extras = loadExtras();
+  extras.forEach(function(book) {
+    book.num = BOOKS.length + 1;
+    BOOKS.push(book);
+    appendCardToDOM(book);
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9. INIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 document.getElementById('qi').addEventListener('input', applyFilters);
 document.getElementById('fi').addEventListener('change', applyFilters);
+document.getElementById('btnAdd').addEventListener('click', openModal);
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+document.getElementById('modalConfirm').addEventListener('click', confirmAdd);
+document.getElementById('modalBg').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('modalBg')) closeModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('modalBg').classList.contains('on')) confirmAdd();
+});
+
 renderAll();
+restoreExtras();
 
 })();
 </script>
