@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Biblioteca Personal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #f5f0e8; --parchment: #ede4d0; --parchment-dark: #d4c9a8;
+  --ink: #2a1f0e; --ink-light: #5a4a2e; --ink-faded: #8a7555;
+  --gold: #b8962e; --gold-light: #d4af50; --gold-pale: #f0e0a0;
+  --border: #c8aa6e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background-color:var(--cream); background-image:radial-gradient(ellipse at 20% 0%,rgba(184,150,46,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(139,32,32,.06) 0%,transparent 60%); color:var(--ink); font-family:'Crimson Text',Georgia,serif; min-height:100vh; }
+
+header { text-align:center; padding:3rem 2rem 2rem; border-bottom:1px solid var(--border); position:relative; }
+header::before,header::after { content:'✦'; position:absolute; bottom:-.65rem; font-size:1rem; color:var(--gold); background:var(--cream); padding:0 .5rem; }
+header::before { left:calc(50% - 5rem); } header::after { left:calc(50% + 3.5rem); }
+.orn { font-size:.85rem; color:var(--gold); letter-spacing:.35em; text-transform:uppercase; margin-bottom:.75rem; }
+h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3.4rem); font-weight:700; line-height:1.1; }
+h1 em { font-style:italic; color:var(--gold); display:block; font-size:.65em; font-weight:400; letter-spacing:.05em; margin-top:.2rem; }
+.hsub { margin-top:1rem; font-family:'IM Fell English',serif; font-style:italic; font-size:1rem; color:var(--ink-faded); }
+
+.sbar { display:flex; justify-content:center; gap:2.5rem; padding:1.25rem 2rem; background:var(--parchment); border-bottom:1px solid var(--parchment-dark); flex-wrap:wrap; }
+.stat { text-align:center; }
+.snum { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--ink); line-height:1; }
+.slbl { font-size:.75rem; color:var(--ink-faded); letter-spacing:.1em; text-transform:uppercase; margin-top:.2rem; }
+
+.ctrl { max-width:860px; margin:2rem auto 0; padding:0 1.5rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+.sw { flex:1; min-width:220px; position:relative; }
+.sw::before { content:'⚲'; position:absolute; left:.85rem; top:50%; transform:translateY(-50%) rotate(45deg); font-size:1.1rem; color:var(--ink-faded); pointer-events:none; }
+input[type=text] { width:100%; padding:.6rem 1rem .6rem 2.4rem; font-family:'Crimson Text',serif; font-size:1rem; color:var(--ink); background:var(--parchment); border:1px solid var(--border); border-radius:2px; outline:none; transition:border-color .2s,box-shadow .2s; }
+input[type=text]:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,150,46,.1); }
+input::placeholder { color:var(--ink-faded); font-style:italic; }
+select { padding:.6rem .9rem; font-family:'Crimson Text',serif; font-size:1rem; color:var(--ink); background:var(--parchment); border:1px solid var(--border); border-radius:2px; cursor:pointer; outline:none; }
+
+.srb { max-width:860px; margin:1rem auto 0; padding:0 1.5rem; display:none; }
+.srb.on { display:block; }
+.srb-i { background:var(--parchment); border:1px solid var(--border); border-left:4px solid var(--gold); padding:.75rem 1rem; font-family:'IM Fell English',serif; font-style:italic; font-size:.95rem; color:var(--ink-light); }
+
+main { max-width:860px; margin:2rem auto 4rem; padding:0 1.5rem; }
+
+.gbar { height:4px; background:var(--parchment-dark); border-radius:2px; margin-bottom:2rem; overflow:hidden; }
+.gfill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); border-radius:2px; transition:width .5s ease; }
+
+.book { display:flex; align-items:flex-start; gap:1rem; padding:1rem 1.1rem; background:#fff; border:1px solid var(--parchment-dark); border-left:3px solid var(--parchment-dark); margin-bottom:.55rem; cursor:pointer; transition:border-color .2s,background .2s,transform .15s; border-radius:1px; }
+.book:hover { border-color:var(--gold); border-left-color:var(--gold); background:#fffdf8; transform:translateX(2px); }
+.book.done { background:var(--parchment); border-left-color:var(--gold); opacity:.82; }
+.book.done:hover { opacity:1; }
+.book.hide { display:none; }
+
+.bnum { font-family:'Playfair Display',serif; font-size:.7rem; color:var(--ink-faded); min-width:2rem; padding-top:.25rem; text-align:right; font-style:italic; }
+.bchk { width:1.35rem; height:1.35rem; border:1.5px solid var(--border); border-radius:1px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.18rem; transition:background .2s,border-color .2s; background:white; }
+.book.done .bchk { background:var(--gold); border-color:var(--gold); }
+.tick { font-size:.72rem; color:white; opacity:0; transition:opacity .2s; }
+.book.done .tick { opacity:1; }
+.bbody { flex:1; min-width:0; }
+.btitle { font-family:'Playfair Display',serif; font-size:.98rem; font-weight:600; color:var(--ink); line-height:1.25; }
+.book.done .btitle { text-decoration:line-through; text-decoration-color:var(--gold); color:var(--ink-light); }
+.mrow { display:flex; align-items:center; gap:.6rem; margin-top:.25rem; flex-wrap:wrap; }
+.bauth { font-size:.83rem; color:var(--ink-faded); font-style:italic; }
+.bsaga { font-size:.68rem; letter-spacing:.06em; color:var(--ink-faded); font-style:italic; }
+.btag { font-size:.65rem; letter-spacing:.07em; text-transform:uppercase; padding:.15rem .45rem; border-radius:1px; font-family:'Crimson Text',serif; }
+.t-king     { background:#f5e8e8; color:#8b2020; border:1px solid #e8c8c8; }
+.t-hp       { background:#e8edf5; color:#1e3a6e; border:1px solid #c0cce0; }
+.t-lotr     { background:#eaf2e8; color:#2a5020; border:1px solid #b8d4b4; }
+.t-ms       { background:#f0eaf8; color:#4a2070; border:1px solid #d0b8e8; }
+.t-kl       { background:#e8f5f0; color:#1a5040; border:1px solid #b4d8cc; }
+.t-tower    { background:#f5ede8; color:#6e3010; border:1px solid #e0c0a8; }
+.t-mxtx     { background:#fce8f0; color:#7e1040; border:1px solid #e8b4cc; }
+.t-guerra   { background:#f5f0e0; color:#5a4800; border:1px solid #d8cc94; }
+.t-other    { background:#f0f0ec; color:#4a4840; border:1px solid #d0cec8; }
+.t-col      { background:#f2ece8; color:#5a3010; border:1px solid #dcc8b8; }
+.t-nonfic   { background:#f8f5e8; color:#5a4800; border:1px solid #d8cc94; }
+.t-pc       { background:#edf0fa; color:#1a2a6e; border:1px solid #b8c4e8; }
+.t-rc       { background:#f0e8f5; color:#4a1070; border:1px solid #d0b8e8; }
+.t-ro       { background:#f5e8ed; color:#6e102a; border:1px solid #e8b8c8; }
+
+.stars { display:flex; gap:.15rem; margin-top:.4rem; }
+.star { font-size:.88rem; color:var(--parchment-dark); cursor:pointer; transition:color .15s,transform .1s; line-height:1; user-select:none; }
+.star:hover,.star.on { color:var(--gold); }
+.star:active { transform:scale(1.3); }
+.rdate { font-size:.7rem; color:var(--ink-faded); font-style:italic; margin-top:.25rem; }
+
+.sdiv { display:flex; align-items:center; gap:1rem; margin:2.5rem 0 1.25rem; }
+.sdiv::before,.sdiv::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,var(--border)); }
+.sdiv::after { background:linear-gradient(to left,transparent,var(--border)); }
+.sdivlbl { font-family:'Playfair Display',serif; font-size:.78rem; font-weight:600; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); white-space:nowrap; }
+
+footer { text-align:center; padding:2rem; border-top:1px solid var(--parchment-dark); color:var(--ink-faded); font-family:'IM Fell English',serif; font-style:italic; font-size:.9rem; }
+.toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(3rem); background:var(--ink); color:var(--gold-pale); font-family:'IM Fell English',serif; font-style:italic; font-size:.95rem; padding:.65rem 1.5rem; border-radius:2px; border:1px solid var(--gold); opacity:0; transition:all .35s; pointer-events:none; z-index:999; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+@media(max-width:600px) { .bnum { display:none; } .sbar { gap:1.2rem; } }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="orn">✦ &nbsp; Registro de lectura &nbsp; ✦</p>
+  <h1>Mi Biblioteca<em>Colección Personal</em></h1>
+  <p class="hsub">Cada libro leído es una vida vivida dos veces</p>
+</header>
+
+<div class="sbar">
+  <div class="stat"><div class="snum" id="st">0</div><div class="slbl">Total</div></div>
+  <div class="stat"><div class="snum" id="sr">0</div><div class="slbl">Leídos</div></div>
+  <div class="stat"><div class="snum" id="sp">0</div><div class="slbl">Pendientes</div></div>
+  <div class="stat"><div class="snum" id="spct">0%</div><div class="slbl">Avance</div></div>
+</div>
+
+<div class="ctrl">
+  <div class="sw"><input type="text" id="qi" placeholder="Buscar libro, autor o saga…" autocomplete="off"></div>
+  <select id="fi">
+    <option value="all">Todos</option>
+    <option value="pending">Pendientes</option>
+    <option value="read">Leídos</option>
+  </select>
+</div>
+<div class="srb" id="srb"><div class="srb-i" id="srbtxt"></div></div>
+
+<main id="app"></main>
+<div class="toast" id="toastEl"></div>
+<footer>✦ &nbsp; In libris libertas &nbsp; ✦</footer>
+
+<script>
+(function() {
+'use strict';
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   1. DEFINICIÓN DE SAGAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var SAGAS = [
+  { key:'HP', label:'Harry Potter', tag:'t-hp', author:'J.K. Rowling', books:[
+    'Harry Potter y la piedra filosofal',
+    'Harry Potter y la cámara secreta',
+    'Harry Potter y el prisionero de Azkaban',
+    'Harry Potter y el cáliz de fuego',
+    'Harry Potter y la Orden del Fénix',
+    'Harry Potter y el misterio del príncipe',
+    'Harry Potter y las reliquias de la muerte'
+  ]},
+  { key:'SK', label:'Stephen King — Novelas', tag:'t-king', author:'Stephen King', books:[
+    'Carrie', "Salem's Lot", 'El resplandor', 'Rabia', 'El fugitivo',
+    'La danza de la muerte', 'La larga marcha', 'La zona muerta',
+    'Ojos de fuego', 'Cujo', 'Carretera maldita', 'Christine',
+    'Cementerio de animales', 'El talismán', 'Ojos de dragón', 'It',
+    'Misery', 'Los Tommyknockers', 'La mitad oscura', 'El pasillo de la muerte',
+    'Cosas necesarias', 'El juego de Gerald', 'Dolores Claiborne', 'Insomnia',
+    'Rose Madder', 'Desesperación', 'Posesión', 'Un saco de huesos',
+    'La chica que amaba a Tom Gordon', 'Corazones en la Atlántida',
+    'La tienda', 'Buick 8', 'Casa negra', 'Colorado Kid', 'Cell',
+    'La historia de Lisey', 'Blaze', 'Duma Key', 'Under the Dome',
+    '22/11/63', 'Joyland', 'Doctor Sueño', 'Mr. Mercedes', 'Revival',
+    'Quien pierde paga', 'Fin de guardia', 'Bellas durmientes',
+    'El visitante', 'Instituto', 'Después', 'Billy Summers', 'Holly'
+  ]},
+  { key:'TO', label:'La Torre Oscura', tag:'t-tower', author:'Stephen King', books:[
+    'El pistolero', 'La llegada de los tres', 'Las tierras baldías',
+    'Mago y cristal', 'Lobos del Calla', 'Canción de Susannah',
+    'La torre oscura', 'El viento por la cerradura'
+  ]},
+  { key:'LOTR', label:'El Señor de los Anillos', tag:'t-lotr', author:'J.R.R. Tolkien', books:[
+    'La Comunidad del Anillo', 'Las Dos Torres', 'El Retorno del Rey'
+  ]},
+  { key:'MS', label:'Mistborn', tag:'t-ms', author:'Brandon Sanderson', books:[
+    'El Imperio Final', 'El Pozo de la Ascensión', 'El Héroe de las Eras'
+  ]},
+  { key:'KL', label:'La canción del lobo', tag:'t-kl', author:'T.J. Klune', books:[
+    'Wolfsong — La canción del lobo', 'Ravensong — La canción del cuervo',
+    'Heartsong — La canción del corazón', 'Brothersong — La canción de los hermanos'
+  ]},
+  { key:'GUE', label:'La guerra de los cielos', tag:'t-guerra', author:'varios', books:[
+    'Tomo 0',
+    'Tomo 1 — Testamento de Sombra', 'Tomo 1 — Testamento del Gris',
+    'Primera plegaria del Testamento del Gris',
+    'Tomo 1 — Testamento de Mad', 'Tomo 1 — Testamento de Nilia',
+    'Tomo 2 — Testamento del Gris', 'Tomo 2 — Testamento de Sombra',
+    'Tomo 3 — Testamentos del Gris y Sombra',
+    'Tomo 2 — Testamento de Mad', 'Tomo 2 — Testamento de Nilia',
+    'Tomo 3 — Testamento de Mad'
+  ]},
+  { key:'MXTX', label:'Oficial del Cielo (MXTX)', tag:'t-mxtx', author:'Mo Xiang Tong Xiu', books:[
+    'La bendición del Oficial del Cielo (todos los tomos)',
+    'La bendición del Oficial del Cielo 2'
+  ]},
+  { key:'COL', label:'Stephen King — Colecciones', tag:'t-col', author:'Stephen King', books:[
+    'El umbral de la noche', 'Las cuatro estaciones', 'Skeleton Crew',
+    'Pesadillas y alucinaciones', 'Todo es eventual', 'Just After Sunset',
+    'Full Dark, No Stars', 'El bazar de los malos sueños', 'Si sangra', 'You Like It Darker'
+  ]},
+  { key:'NF', label:'Stephen King — No ficción', tag:'t-nonfic', author:'Stephen King', books:[
+    'Danza macabra', 'Mientras escribo', 'Faithful'
+  ]},
+  { key:'PC', label:'El príncipe cautivo', tag:'t-pc', author:'C.S. Pacat', books:[
+    'El príncipe cautivo (Captive Prince)',
+    'El príncipe guerrero (Prince's Gambit)',
+    'El rey de reyes (Kings Rising)'
+  ]},
+  { key:'RC', label:'Rey cuervo', tag:'t-rc', author:'Leigh Bardugo', books:[
+    'Seis de cuervos',
+    'Reino de ladrones'
+  ]},
+  { key:'RO', label:'El rey oscuro', tag:'t-ro', author:'C.S. Pacat', books:[
+    'El rey oscuro (Dark Rise)',
+    'El rey oscuro — Tomo 2 (Dark Heir)',
+    'El rey oscuro — Tomo 3'
+  ]},
+  { key:'IND', label:'Libro individual', tag:'t-other', author:'', books:[
+    'Babel|R.F. Kuang',
+    'Cuando Haru estuvo aquí|Dustin Thao',
+    'Cuatro estaciones en Japón|Nick Bradley',
+    'El juego del alma|Javier Castillo',
+    'El susurrador|Donato Carrisi',
+    'Un lugar en el mundo|Katherine Marsh',
+    'La maldición de Hill House|Shirley Jackson',
+    'La biblioteca de la medianoche|Matt Haig',
+    'Rojo, blanco y sangre azul|Casey McQuiston',
+    'Historias chilenas de fantasmas|César Parra',
+    'Fuego y hielo|Joe Hill',
+    'No debes entrar al bosque|Drews',
+    'El gato de Schrödinger|Lily del Pilar',
+    '¡Por nosotros!|Becky Albertalli & Adam Silvera',
+    'Dulce de humo|J. Valenti',
+    'En algún lugar del mar más azul|T.J. Klune',
+    'La casa en el mar más azul|T.J. Klune',
+    'Amigo imaginario|Stephen Chbosky',
+    'Bienvenidos a la librería Hyunam-Dong|Hwang Bo-Reum',
+    'Eco del destino|Timekeeper',
+    'Ellos dos al final (todos los tomos)|Adam Silvera',
+    'La asistenta|Freida McFadden',
+    'Te receto otro gato|varios',
+    'El diablo se viste a la moda — Tomo 1|varios',
+    'El diablo se viste a la moda — Tomo 2|varios',
+    'El diablo se viste a la moda — Tomo 3|varios'
+  ]}
+];
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   2. INTERCALADO REAL
+   Patrón de turno cíclico entre sagas.
+   SK aparece cada 2 slots (hilo conductor).
+   El resto rota en los huecos intermedios.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildList() {
+  var queues = {};
+  SAGAS.forEach(function(s) { queues[s.key] = s.books.slice(); });
+
+  var result = [];
+
+  // Rotación para el slot "otro" (entre SK y SK).
+  // IND aparece más frecuente por tener más libros (26 vs ~3-12 del resto).
+  var baseRot = ['HP','IND','GUE','IND','TO','IND','COL','IND','KL','PC','IND','LOTR','IND','RC','MS','IND','NF','RO','IND','MXTX','IND'];
+  var roi = 0;
+
+  function pickFromRotation(lastKey) {
+    for (var t = 0; t < baseRot.length * 2; t++) {
+      var k = baseRot[roi % baseRot.length];
+      roi++;
+      if (k !== lastKey && queues[k] && queues[k].length > 0) return k;
+    }
+    // Fallback: cualquier saga distinta de SK y lastKey que tenga libros
+    var keys = Object.keys(queues);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] !== 'SK' && keys[i] !== lastKey && queues[keys[i]].length > 0) return keys[i];
+    }
+    return null;
+  }
+
+  function anyLeft() {
+    var keys = Object.keys(queues);
+    for (var i = 0; i < keys.length; i++) { if (queues[keys[i]].length > 0) return true; }
+    return false;
+  }
+
+  // Empezar con HP
+  if (queues['HP'] && queues['HP'].length > 0) {
+    result.push({ key: 'HP', raw: queues['HP'].shift() });
+  }
+
+  var lastKey = 'HP';
+  var maxIter = 10000;
+
+  while (anyLeft() && maxIter-- > 0) {
+    // Slot SK (hilo conductor)
+    if (queues['SK'] && queues['SK'].length > 0) {
+      result.push({ key: 'SK', raw: queues['SK'].shift() });
+      lastKey = 'SK';
+    }
+    // Slot otro
+    var ok = pickFromRotation(lastKey);
+    if (ok) {
+      result.push({ key: ok, raw: queues[ok].shift() });
+      lastKey = ok;
+    }
+  }
+
+  return result;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   3. CONSTRUIR LIBRO FLAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function getSaga(key) {
+  for (var i = 0; i < SAGAS.length; i++) {
+    if (SAGAS[i].key === key) return SAGAS[i];
+  }
+  return null;
+}
+
+var rawList = buildList();
+var BOOKS = rawList.map(function(entry, i) {
+  var saga = getSaga(entry.key);
+  var title = entry.raw;
+  var author = saga.author;
+  if (entry.key === 'IND') {
+    var parts = entry.raw.split('|');
+    title = parts[0];
+    author = parts[1] || '';
+  }
+  return {
+    id: entry.key + '_' + i,
+    key: entry.key,
+    sagaLabel: saga.label,
+    tag: saga.tag,
+    title: title,
+    author: author,
+    num: i + 1
+  };
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   4. ESTADO (localStorage)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var SKEY = 'bib_v5';
+function loadST() {
+  try { return JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch(e) { return {}; }
+}
+function saveST() {
+  localStorage.setItem(SKEY, JSON.stringify(ST));
+}
+var ST = loadST();
+function bk(id) { return ST[id] || { read: false, date: null, stars: 0 }; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   5. RENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function cardHTML(b) {
+  var s = bk(b.id);
+  var doneClass = s.read ? ' done' : '';
+  var stars = '';
+  for (var n = 1; n <= 5; n++) {
+    stars += '<span class="star' + (n <= s.stars ? ' on' : '') + '" data-n="' + n + '" data-id="' + b.id + '">★</span>';
+  }
+  var dateRow = (s.read && s.date) ? '<div class="rdate">Leído el ' + s.date + '</div>' : '';
+  return '<div class="book' + doneClass + '" data-id="' + b.id + '" tabindex="0" role="checkbox" aria-checked="' + s.read + '">'
+    + '<div class="bnum">' + b.num + '</div>'
+    + '<div class="bchk"><span class="tick">✓</span></div>'
+    + '<div class="bbody">'
+    + '<div class="btitle">' + b.title + '</div>'
+    + '<div class="mrow">'
+    + '<span class="bauth">' + b.author + '</span>'
+    + '<span class="btag ' + b.tag + '">' + b.key + '</span>'
+    + '<span class="bsaga">· ' + b.sagaLabel + '</span>'
+    + '</div>'
+    + '<div class="stars">' + stars + '</div>'
+    + dateRow
+    + '</div></div>';
+}
+
+function renderAll() {
+  var html = '<div class="gbar"><div class="gfill" id="gf" style="width:0%"></div></div>';
+  var size = 17;
+  for (var i = 0; i < BOOKS.length; i += size) {
+    var chunk = BOOKS.slice(i, Math.min(i + size, BOOKS.length));
+    var n1 = chunk[0].num;
+    var n2 = chunk[chunk.length - 1].num;
+    var tramo = Math.floor(i / size) + 1;
+    html += '<div class="sdiv"><span class="sdivlbl">— Tramo ' + tramo + ' &nbsp;·&nbsp; #' + n1 + '–' + n2 + ' —</span></div>';
+    for (var j = 0; j < chunk.length; j++) {
+      html += cardHTML(chunk[j]);
+    }
+  }
+  document.getElementById('app').innerHTML = html;
+  bindAll();
+  updateStats();
+}
+
+function rebuildCard(id) {
+  var el = document.querySelector('[data-id="' + id + '"]');
+  if (!el) return;
+  var b = null;
+  for (var i = 0; i < BOOKS.length; i++) { if (BOOKS[i].id === id) { b = BOOKS[i]; break; } }
+  if (!b) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = cardHTML(b);
+  var newCard = tmp.firstElementChild;
+  // Preserve hide state
+  var q = document.getElementById('qi').value.trim().toLowerCase();
+  var f = document.getElementById('fi').value;
+  if (!matches(b, q, f)) newCard.classList.add('hide');
+  el.parentNode.replaceChild(newCard, el);
+  bindCard(newCard, id);
+  updateStats();
+}
+
+function bindCard(el, id) {
+  el.addEventListener('click', function(e) {
+    if (e.target.dataset.n) return; // star click
+    toggleRead(id);
+  });
+  el.addEventListener('keydown', function(e) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleRead(id); }
+  });
+  var starEls = el.querySelectorAll('.star');
+  for (var i = 0; i < starEls.length; i++) {
+    (function(s) {
+      s.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var n = parseInt(s.dataset.n, 10);
+        var cur = bk(id).stars;
+        ST[id] = { read: bk(id).read, date: bk(id).date, stars: cur === n ? 0 : n };
+        saveST();
+        rebuildCard(id);
+      });
+    })(starEls[i]);
+  }
+}
+
+function bindAll() {
+  var cards = document.querySelectorAll('.book');
+  for (var i = 0; i < cards.length; i++) {
+    var id = cards[i].dataset.id;
+    bindCard(cards[i], id);
+  }
+}
+
+function toggleRead(id) {
+  var s = bk(id);
+  if (!s.read) {
+    var d = new Date();
+    var dateStr = d.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+    ST[id] = { read: true, date: dateStr, stars: s.stars };
+    showToast('📖 ¡Marcado como leído!');
+  } else {
+    ST[id] = { read: false, date: null, stars: s.stars };
+    showToast('Libro desmarcado');
+  }
+  saveST();
+  rebuildCard(id);
+}
+
+function updateStats() {
+  var total = BOOKS.length;
+  var readCount = 0;
+  for (var i = 0; i < BOOKS.length; i++) { if (bk(BOOKS[i].id).read) readCount++; }
+  var pct = total ? Math.round(readCount / total * 100) : 0;
+  document.getElementById('st').textContent = total;
+  document.getElementById('sr').textContent = readCount;
+  document.getElementById('sp').textContent = total - readCount;
+  document.getElementById('spct').textContent = pct + '%';
+  var gf = document.getElementById('gf');
+  if (gf) gf.style.width = pct + '%';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   6. BÚSQUEDA Y FILTROS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function matches(b, q, f) {
+  var s = bk(b.id);
+  var mq = !q || b.title.toLowerCase().indexOf(q) >= 0 || b.author.toLowerCase().indexOf(q) >= 0 || b.sagaLabel.toLowerCase().indexOf(q) >= 0;
+  var mf = f === 'all' || (f === 'read' && s.read) || (f === 'pending' && !s.read);
+  return mq && mf;
+}
+
+function applyFilters() {
+  var q = document.getElementById('qi').value.trim().toLowerCase();
+  var f = document.getElementById('fi').value;
+  var cards = document.querySelectorAll('.book');
+  for (var i = 0; i < cards.length; i++) {
+    var id = cards[i].dataset.id;
+    var b = null;
+    for (var j = 0; j < BOOKS.length; j++) { if (BOOKS[j].id === id) { b = BOOKS[j]; break; } }
+    if (b) {
+      if (matches(b, q, f)) { cards[i].classList.remove('hide'); }
+      else { cards[i].classList.add('hide'); }
+    }
+  }
+  updateSearchBanner(q);
+}
+
+function updateSearchBanner(q) {
+  var srb = document.getElementById('srb');
+  var srt = document.getElementById('srbtxt');
+  if (!q) { srb.classList.remove('on'); return; }
+  var hits = BOOKS.filter(function(b) {
+    return b.title.toLowerCase().indexOf(q) >= 0 || b.author.toLowerCase().indexOf(q) >= 0 || b.sagaLabel.toLowerCase().indexOf(q) >= 0;
+  });
+  srb.classList.add('on');
+  if (!hits.length) {
+    srt.innerHTML = 'No se encontró ningún libro con "<em>' + q + '</em>".';
+    return;
+  }
+  var readHits = hits.filter(function(b) { return bk(b.id).read; });
+  var pendHits = hits.filter(function(b) { return !bk(b.id).read; });
+  var msg = '<strong>' + hits.length + '</strong> resultado(s) para "<em>' + q + '</em>". ';
+  if (readHits.length) msg += '✓ Ya leídos: ' + readHits.map(function(b) { return '<em>' + b.title + '</em> (#' + b.num + ')'; }).join(', ') + '. ';
+  if (pendHits.length) msg += '○ Pendientes: ' + pendHits.map(function(b) { return '<em>' + b.title + '</em> (#' + b.num + ')'; }).join(', ') + '.';
+  srt.innerHTML = msg;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   7. TOAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var toastTimer = null;
+function showToast(msg) {
+  var t = document.getElementById('toastEl');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   8. INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+document.getElementById('qi').addEventListener('input', applyFilters);
+document.getElementById('fi').addEventListener('change', applyFilters);
+renderAll();
+
+})();
+</script>
+</body>
+</html>
