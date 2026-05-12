@@ -96,6 +96,11 @@ footer { text-align:center; padding:2rem; border-top:1px solid var(--parchment-d
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .btn-add { background:var(--ink); color:var(--gold-pale); border:1px solid var(--gold); padding:.6rem 1.2rem; font-family:'IM Fell English',serif; font-style:italic; font-size:1rem; cursor:pointer; border-radius:2px; transition:background .2s,color .2s; white-space:nowrap; }
 .btn-add:hover { background:var(--gold); color:var(--ink); }
+.btn-sync { background:var(--parchment); color:var(--ink-light); border:1px solid var(--border); padding:.6rem 1rem; font-family:'IM Fell English',serif; font-style:italic; font-size:.95rem; cursor:pointer; border-radius:2px; transition:background .2s; white-space:nowrap; }
+.btn-sync:hover { background:var(--parchment-dark); }
+.sync-bar { max-width:860px; margin:.75rem auto 0; padding:0 1.5rem; display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
+.sync-note { font-size:.78rem; color:var(--ink-faded); font-family:'IM Fell English',serif; font-style:italic; }
+#importFile { display:none; }
 
 /* Modal */
 .modal-bg { display:none; position:fixed; inset:0; background:rgba(42,31,14,.55); backdrop-filter:blur(2px); z-index:1000; align-items:center; justify-content:center; }
@@ -142,6 +147,12 @@ footer { text-align:center; padding:2rem; border-top:1px solid var(--parchment-d
     <option value="read">Leídos</option>
   </select>
   <button class="btn-add" id="btnAdd">+ Agregar libro</button>
+</div>
+<div class="sync-bar">
+  <button class="btn-sync" id="btnExport">⬇ Exportar progreso</button>
+  <button class="btn-sync" id="btnImport">⬆ Importar progreso</button>
+  <input type="file" id="importFile" accept=".json">
+  <span class="sync-note">✦ Exporta tu progreso, guárdalo en la nube y cárgalo en cualquier dispositivo</span>
 </div>
 <div class="srb" id="srb"><div class="srb-i" id="srbtxt"></div></div>
 
@@ -683,9 +694,63 @@ function restoreExtras() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    9. INIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EXPORTAR / IMPORTAR PROGRESO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function exportProgress() {
+  var data = {
+    version: 2,
+    exported: new Date().toISOString(),
+    state: ST,
+    extras: loadExtras()
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var d = new Date();
+  a.download = 'biblioteca_' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✦ Progreso exportado correctamente');
+}
+
+function importProgress(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.state) throw new Error('Archivo inválido');
+      // Merge state
+      ST = data.state;
+      saveST();
+      // Restore extras
+      if (data.extras && data.extras.length) {
+        saveExtras(data.extras);
+      }
+      showToast('✦ Progreso importado — recargando…');
+      setTimeout(function() { location.reload(); }, 1200);
+    } catch(err) {
+      showToast('⚠ Error al leer el archivo');
+    }
+  };
+  reader.readAsText(file);
+}
+
 document.getElementById('qi').addEventListener('input', applyFilters);
 document.getElementById('fi').addEventListener('change', applyFilters);
 document.getElementById('btnAdd').addEventListener('click', openModal);
+document.getElementById('btnExport').addEventListener('click', exportProgress);
+document.getElementById('btnImport').addEventListener('click', function() {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', function(e) {
+  importProgress(e.target.files[0]);
+  this.value = '';
+});
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalCancel').addEventListener('click', closeModal);
 document.getElementById('modalConfirm').addEventListener('click', confirmAdd);
